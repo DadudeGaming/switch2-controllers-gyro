@@ -10,6 +10,7 @@ import win32con
 from dataclasses import dataclass
 import cemuhookserver
 from config import CONFIG, SWITCH_BUTTONS
+from mouse_input import send_relative_mouse
 from utils import apply_calibration_to_axis, get_stick_xy, press_or_release_mouse_button, reverse_bits, signed_looping_difference_16bit, to_hex, decodeu, decodes
 
 logging.basicConfig()
@@ -628,7 +629,9 @@ class Controller:
                     if dx != 0 or dy != 0:
                         self.mx += int(dx * mouse_config.sensitivity)
                         self.my += int(dy * mouse_config.sensitivity)
-                        win32api.SetCursorPos((self.mx, self.my))
+                        dx = int(dx * mouse_config.sensitivity)
+                        dy = int(dy * mouse_config.sensitivity)
+                        send_relative_mouse(dx, dy)
 
                     press_or_release_mouse_button(lb, self.previous_mouse_state.lb, win32con.MOUSEEVENTF_LEFTDOWN, self.mx, self.my)
                     press_or_release_mouse_button(mb, self.previous_mouse_state.mb, win32con.MOUSEEVENTF_MIDDLEDOWN, self.mx, self.my)
