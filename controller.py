@@ -346,6 +346,9 @@ class Controller:
     def __init__(self, device: BLEDevice):
         self.mx = None
         self.my = None
+        self.onSurface = False
+        self.checksOnSurface = 0
+        self.doMouse = None
         self.device: BLEDevice = device
         self.client: BleakClient = None
         self.controller_info: ControllerInfo = None
@@ -578,23 +581,38 @@ class Controller:
             self.mx = x
             self.my = y
 
-        if self.previous_mouse_state is not None:
+        if inputData.mouse_distance != 0 and inputData.mouse_distance < 1000 and inputData.mouse_roughness < 4000: # Check if on surface
+            self.onSurface = True
+        else:
+            self.checksOnSurface = 0 # Reset when lifted
+            self.doMouse = None
+            self.onSurface = False
+
+        if self.checksOnSurface >= 20: # If checked 20 times, stop checking til next lift
+            if self.doMouse == False: # Only stop code if in grip (No mouse movement)
+                return
+
+        if self.previous_mouse_state is not None and self.onSurface and self.doMouse is None: # Check that it is on a surface and no mouse state is set
             dx2 = signed_looping_difference_16bit(self.previous_mouse_state.x, x)
             dy2 = signed_looping_difference_16bit(self.previous_mouse_state.y ,y)
 
             tx, ty = win32api.GetCursorPos()
             tx += int(dx2)
             ty += int(dy2)
-            if self.mx-5 <= tx <= self.mx+5 and self.my-5 <= ty <= self.my+5:
-                print("no mouse")
-                return
+            if self.mx-5 <= tx <= self.mx+5 and self.my-5 <= ty <= self.my+5: # Check if there was no movement from the mouse
+                if self.checksOnSurface >= 19:
+                    print("no mouse")
+                    self.doMouse = False
+            else:
+                if self.checksOnSurface >= 19:
+                    self.doMouse = True
+                    print("mouse")
+
+        self.checksOnSurface += 1
 
         mouse_config = CONFIG.mouse_config
         if mouse_config.enabled and self.is_joycon():
-            # Check if joycon is being used as a mouse
-            if inputData.mouse_distance != 0 and inputData.mouse_distance < 1000 and inputData.mouse_roughness < 4000:
-                print("mouse")
-
+            if self.onSurface:
                 mouseButtonsConfig = mouse_config.joycon_l_buttons if self.is_joycon_left() else mouse_config.joycon_r_buttons
                 lb = inputData.buttons & mouseButtonsConfig.left_button
                 mb = inputData.buttons & mouseButtonsConfig.middle_button
@@ -606,13 +624,10 @@ class Controller:
                 if self.previous_mouse_state is not None:
                     dx = signed_looping_difference_16bit(self.previous_mouse_state.x, x)
                     dy = signed_looping_difference_16bit(self.previous_mouse_state.y ,y)
-
                     self.mx, self.my = win32api.GetCursorPos()
                     if dx != 0 or dy != 0:
                         self.mx += int(dx * mouse_config.sensitivity)
                         self.my += int(dy * mouse_config.sensitivity)
-                        print(self.mx)
-                        print(self.my)
                         win32api.SetCursorPos((self.mx, self.my))
 
                     press_or_release_mouse_button(lb, self.previous_mouse_state.lb, win32con.MOUSEEVENTF_LEFTDOWN, self.mx, self.my)
