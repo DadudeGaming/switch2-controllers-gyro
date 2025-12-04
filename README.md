@@ -41,3 +41,6 @@ By default, the app will always try to combine a right and left joycons together
 
 If you wish to use both joycons sideway, you can hold SL\SR while turning them on
 An other option is to set `combine_joycons` in the config to false so that the app will never try to combine joycons
+
+### Gyro
+Gyro is not great, it currently uses a udp server as output, and since steam detects it as an xbox controller, it will not take gyro input.
