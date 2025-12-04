@@ -602,12 +602,10 @@ class Controller:
             ty += int(dy2)
             if self.mx-5 <= tx <= self.mx+5 and self.my-5 <= ty <= self.my+5: # Check if there was no movement from the mouse
                 if self.checksOnSurface >= 40:
-                    print("no mouse")
                     self.doMouse = False
             else:
                 if self.checksOnSurface >= 20:
                     self.doMouse = True
-                    print("mouse")
 
         self.checksOnSurface += 1
 
@@ -628,7 +626,7 @@ class Controller:
                     self.mx, self.my = win32api.GetCursorPos()
                     if dx != 0 or dy != 0:
                         self.mx += int(dx * mouse_config.sensitivity)
-                        self.my += int(dy * mouse_config.sensitivity)
+                        self.my += int(dy * mouse_config.sensitivity) # could probably change this to all work with the new relative input mode but im lazy
                         dx = int(dx * mouse_config.sensitivity)
                         dy = int(dy * mouse_config.sensitivity)
                         send_relative_mouse(dx, dy)
