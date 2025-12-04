@@ -1,0 +1,87 @@
+combine_joycons: true
+deadzone: 50
+buttons:
+  dual_joycons:
+    Y: X
+    X: Y
+    B: A
+    A: B
+    SR_R:
+    SL_R:
+    R: RB
+    ZR: RT
+    MINUS: BACK
+    PLUS: START
+    R_STK: R_STK
+    L_STK: L_STK
+    HOME: GUIDE
+    CAPT:
+    C:
+    DOWN: DOWN
+    UP: UP
+    RIGHT: RIGHT
+    LEFT: LEFT
+    SR_L:
+    SL_L:
+    L: LB
+    ZL: LT
+  single_joycon_l:
+    MINUS: BACK
+    L_STK: L_STK
+    CAPT: START
+    DOWN: B
+    UP: X
+    RIGHT: Y
+    LEFT: A
+    SR_L: RB
+    SL_L: LB
+    L: LT
+    ZL: RT
+  single_joycon_r:
+    Y: Y
+    X: B
+    B: X
+    A: A
+    SR_R: RB
+    SL_R: LB
+    R: LT
+    ZR: RT
+    PLUS: START
+    R_STK: L_STK
+    HOME: GUIDE
+    C: BACK
+  procon:
+    Y: X
+    X: Y
+    B: A
+    A: B
+    R: RB
+    ZR: RT
+    MINUS: BACK
+    PLUS: START
+    R_STK: R_STK
+    L_STK: L_STK
+    HOME: GUIDE
+    CAPT:
+    C:
+    DOWN: DOWN
+    UP: UP
+    RIGHT: RIGHT
+    LEFT: LEFT
+    L: LB
+    ZL: LT
+    GR: A
+    GL: B
+mouse:
+  enabled: true
+  sensitivity: 0.8
+  scroll_sensitivity: 0.5
+  buttons:
+    left_joycon:
+      left_button: L
+      middle_button: L_STK
+      right_button: ZL
+    right_joycon:
+      left_button: R
+      middle_button: R_STK
+      right_button: ZR
