@@ -10,7 +10,7 @@ import win32con
 from dataclasses import dataclass
 import cemuhookserver
 from config import CONFIG, SWITCH_BUTTONS
-from utils import apply_calibration_to_axis, get_stick_xy, press_or_release_mouse_button, reverse_bits, signed_looping_difference_16bit, to_hex, decodeu, decodes, convert_mac_string_to_value
+from utils import apply_calibration_to_axis, get_stick_xy, press_or_release_mouse_button, reverse_bits, signed_looping_difference_16bit, to_hex, decodeu, decodes
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.INFO)
@@ -344,6 +344,8 @@ MOTION = MotionScaler()
 
 class Controller:
     def __init__(self, device: BLEDevice):
+        self.mx = None
+        self.my = None
         self.device: BLEDevice = device
         self.client: BleakClient = None
         self.controller_info: ControllerInfo = None
@@ -571,11 +573,28 @@ class Controller:
         self.input_report_callback = callback
 
     def simulate_mouse(self, inputData: ControllerInputData):
+        x, y = inputData.mouse_coords
+        if self.mx is None or self.my is None:
+            self.mx = x
+            self.my = y
+
+        if self.previous_mouse_state is not None:
+            dx2 = signed_looping_difference_16bit(self.previous_mouse_state.x, x)
+            dy2 = signed_looping_difference_16bit(self.previous_mouse_state.y ,y)
+
+            tx, ty = win32api.GetCursorPos()
+            tx += int(dx2)
+            ty += int(dy2)
+            if self.mx-5 <= tx <= self.mx+5 and self.my-5 <= ty <= self.my+5:
+                print("no mouse")
+                return
+
         mouse_config = CONFIG.mouse_config
         if mouse_config.enabled and self.is_joycon():
             # Check if joycon is being used as a mouse
             if inputData.mouse_distance != 0 and inputData.mouse_distance < 1000 and inputData.mouse_roughness < 4000:
-                x, y = inputData.mouse_coords
+                print("mouse")
+
                 mouseButtonsConfig = mouse_config.joycon_l_buttons if self.is_joycon_left() else mouse_config.joycon_r_buttons
                 lb = inputData.buttons & mouseButtonsConfig.left_button
                 mb = inputData.buttons & mouseButtonsConfig.middle_button
@@ -588,15 +607,17 @@ class Controller:
                     dx = signed_looping_difference_16bit(self.previous_mouse_state.x, x)
                     dy = signed_looping_difference_16bit(self.previous_mouse_state.y ,y)
 
-                    mx, my = win32api.GetCursorPos()
-                    if (dx != 0 or dy != 0):
-                        mx += int(dx * mouse_config.sensitivity)
-                        my += int(dy * mouse_config.sensitivity)
-                        win32api.SetCursorPos((mx, my))
+                    self.mx, self.my = win32api.GetCursorPos()
+                    if dx != 0 or dy != 0:
+                        self.mx += int(dx * mouse_config.sensitivity)
+                        self.my += int(dy * mouse_config.sensitivity)
+                        print(self.mx)
+                        print(self.my)
+                        win32api.SetCursorPos((self.mx, self.my))
 
-                    press_or_release_mouse_button(lb, self.previous_mouse_state.lb, win32con.MOUSEEVENTF_LEFTDOWN, mx, my)
-                    press_or_release_mouse_button(mb, self.previous_mouse_state.mb, win32con.MOUSEEVENTF_MIDDLEDOWN, mx, my)
-                    press_or_release_mouse_button(rb, self.previous_mouse_state.rb, win32con.MOUSEEVENTF_RIGHTDOWN, mx, my)
+                    press_or_release_mouse_button(lb, self.previous_mouse_state.lb, win32con.MOUSEEVENTF_LEFTDOWN, self.mx, self.my)
+                    press_or_release_mouse_button(mb, self.previous_mouse_state.mb, win32con.MOUSEEVENTF_MIDDLEDOWN, self.mx, self.my)
+                    press_or_release_mouse_button(rb, self.previous_mouse_state.rb, win32con.MOUSEEVENTF_RIGHTDOWN, self.mx, self.my)
 
                     if self.is_joycon_right():
                         scroll_value = inputData.right_stick[1]
@@ -609,7 +630,7 @@ class Controller:
 
                     if abs(scroll_value) > 0.2:
                         win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL, 0, 0, int(scroll_value * 60 * mouse_config.scroll_sensitivity), 0)
-                        
+
                 self.previous_mouse_state = MouseState(x, y, lb, mb, rb)
             else:
                 self.previous_mouse_state = None
@@ -630,4 +651,3 @@ class Controller:
 
     def has_second_stick(self):
         return self.controller_info.product_id in [PRO_CONTROLLER2_PID, NSO_GAMECUBE_CONTROLLER_PID]
-
