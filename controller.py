@@ -588,7 +588,7 @@ class Controller:
             self.doMouse = None
             self.onSurface = False
 
-        if self.checksOnSurface >= 20: # If checked 20 times, stop checking til next lift
+        if self.checksOnSurface >= 41: # If checked 41 times, stop checking til next lift
             if self.doMouse == False: # Only stop code if in grip (No mouse movement)
                 return
 
@@ -600,11 +600,11 @@ class Controller:
             tx += int(dx2)
             ty += int(dy2)
             if self.mx-5 <= tx <= self.mx+5 and self.my-5 <= ty <= self.my+5: # Check if there was no movement from the mouse
-                if self.checksOnSurface >= 19:
+                if self.checksOnSurface >= 40:
                     print("no mouse")
                     self.doMouse = False
             else:
-                if self.checksOnSurface >= 19:
+                if self.checksOnSurface >= 20:
                     self.doMouse = True
                     print("mouse")
 
