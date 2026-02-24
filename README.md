@@ -32,8 +32,11 @@ If you already paired the joycons in windows bluetooth settings, remove it befor
 By default the app switches a joycon to mouse mode when it detects it's being used a mouse (side of of the joycon against a flat surface)
 
 When in mouse mode, the following buttons are used as mouse buttons and no longer useable as gamepad buttons :
+
 L/R : left click
+
 ZL/ZR : right click
+
 joystick : mouse wheel and middle button (click)
 
 If you do not wish to use mouse mode, you can disable it in the config
