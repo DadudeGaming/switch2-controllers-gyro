@@ -6,11 +6,17 @@ An app to use switch 2 joycons on pc as gamepad and mouse
 Download python 3.7+ and install, Setup pip as path so you can run pip --version and pip install <file>
 
 Then run
+
 pip install bleak
+
 pip install pywin32
+
 pip install pyyaml
+
 pip install vgamepad
+
 Download and run the exe from https://github.com/nefarius/ViGEmBus/releases/tag/v1.22.0
+
 Run gui.py (Or the exe if it is bundled)
 
 ### Usage
